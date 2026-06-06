@@ -66,14 +66,22 @@ echo "→ .lodestar/SPEC.md (vendored framework spec)"
 mkdir -p "$TARGET/.lodestar"
 cp "$SPEC" "$TARGET/.lodestar/SPEC.md"
 
+echo "→ .lodestar/templates/ (artifact templates: BIZ/PS/PLAN/PRD/US/TASK/ADR)"
+cp -R "$TEMPLATES/artifacts/" "$TARGET/.lodestar/templates/"
+
 # --- substitute placeholders ---------------------------------------------
 echo "→ filling placeholders (name=$NAME, mode=$MODE, date=$DATE)"
+# Escape characters that are special in a sed replacement (\, &, and /).
+escape_repl() { printf '%s' "$1" | sed -e 's/[\/&\\]/\\&/g'; }
+NAME_ESC="$(escape_repl "$NAME")"
+MODE_ESC="$(escape_repl "$MODE")"
+DATE_ESC="$(escape_repl "$DATE")"
 substitute() {
   local f="$1"
   # portable in-place sed (works on both GNU and BSD/macOS)
-  sed -e "s/{{PROJECT_NAME}}/$NAME/g" \
-      -e "s/{{MODE}}/$MODE/g" \
-      -e "s/{{DATE}}/$DATE/g" \
+  sed -e "s/{{PROJECT_NAME}}/$NAME_ESC/g" \
+      -e "s/{{MODE}}/$MODE_ESC/g" \
+      -e "s/{{DATE}}/$DATE_ESC/g" \
       "$f" > "$f.tmp" && mv "$f.tmp" "$f"
 }
 substitute "$TARGET/AGENTS.md"

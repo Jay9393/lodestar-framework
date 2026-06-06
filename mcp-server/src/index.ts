@@ -15,8 +15,18 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { resolve, sep } from "node:path";
 import { loadManifest, writeGateSkip, type Stage } from "./project.js";
+
+/** Resolve a user-supplied path and reject anything outside the project root. */
+function resolveInRoot(root: string, p: string): string {
+  const base = resolve(root);
+  const full = resolve(base, p);
+  if (full !== base && !full.startsWith(base + sep)) {
+    throw new Error(`path escapes project root: ${p}`);
+  }
+  return full;
+}
 import { checkGate } from "./gates.js";
 
 const server = new McpServer({ name: "lodestar-mcp", version: "0.1.0" });
@@ -78,7 +88,7 @@ server.tool(
     const m = loadManifest();
     let artifact = artifact_text ?? "";
     if (!artifact && artifact_path) {
-      const full = join(m.root, artifact_path);
+      const full = resolveInRoot(m.root, artifact_path);
       artifact = existsSync(full) ? readFileSync(full, "utf8") : `(file not found: ${artifact_path})`;
     }
     return text({
@@ -94,10 +104,10 @@ server.tool(
   "log_decision",
   "Record a gate-skip or notable decision under docs/99-decision-research/gate-skips/.",
   {
-    title: z.string().describe("Short title of the decision/skip."),
-    reason: z.string().describe("Why the gate was skipped or the decision was made, and the risk accepted."),
-    date: z.string().describe("ISO date YYYY-MM-DD (the agent supplies this)."),
-    slug: z.string().describe("kebab-case slug for the filename."),
+    title: z.string().min(1).describe("Short title of the decision/skip."),
+    reason: z.string().min(1).describe("Why the gate was skipped or the decision was made, and the risk accepted."),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "date must be YYYY-MM-DD").describe("ISO date YYYY-MM-DD (the agent supplies this)."),
+    slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "slug must be kebab-case [a-z0-9-]").describe("kebab-case slug for the filename."),
   },
   async ({ title, reason, date, slug }) => {
     const m = loadManifest();

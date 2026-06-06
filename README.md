@@ -2,9 +2,9 @@
 
 # ⭐ Lodestar
 
-**A structured, model-agnostic framework that keeps AI agents on course.**
+**Repo-native planning & enforcement framework for AI coding agents.**
 
-*Consistent quality across any agent model — and no drift away from your top-level goals as the product grows.*
+*Keep Claude, Codex, Cursor, Gemini, and other agents aligned with your product strategy — from idea to implementation — with no drift and consistent quality across models.*
 
 </div>
 
@@ -88,17 +88,36 @@ cd mcp-server && npm install && npm run build
 ```text
 lodestar-framework/
 ├── spec/SPEC.md          # canonical framework definition (read this)
-├── templates/            # entrypoints + docs-tree + PROJECT.md, copied by scaffold
+├── templates/            # entrypoints + docs-tree + PROJECT.md + artifacts/, copied by scaffold
+│   └── artifacts/        # BIZ/PS/PLAN/PRD/US/TASK/ADR doc templates
 ├── scripts/scaffold.sh   # creates the framework in a target project
 ├── mcp-server/           # lodestar-mcp: enforcement as MCP tools (L4)
 ├── hooks/                # Claude Code hook examples (L3)
 └── examples/             # worked example projects
 ```
 
+## What makes it different
+
+1. **Repo-native** — no SaaS. Files and folders are the source of truth; it lives in git.
+2. **Model-agnostic** — one spec, N entrypoints (`AGENTS`/`CLAUDE`/`GEMINI`/Cursor) + an MCP server.
+3. **Anti-drift** — north star + traceability IDs + stage gates.
+
+## Current limitations (v0.1.0)
+
+Being honest about the early state:
+
+- **Gate auto-checks are file-existence heuristics** — they confirm an artifact
+  exists, not that its content is complete. Manual checklist items cover the rest.
+- **Alignment judgment is done by the calling agent, not a server-side LLM.**
+  `check_alignment` returns the north star + artifact for the agent to reason over.
+- **Hooks are Claude Code-specific examples** (L3). For model-agnostic enforcement
+  use the MCP server (L4).
+
 ## Status
 
-`v0.1.0` — early draft. The spec and scaffold are usable today; the MCP server
-is a working skeleton. Feedback and contributions welcome.
+`v0.1.0` — early draft. Spec, scaffold, and artifact templates are usable today;
+the MCP server builds and runs as a working skeleton. Feedback and contributions
+welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

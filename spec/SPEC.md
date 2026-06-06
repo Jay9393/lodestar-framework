@@ -165,6 +165,7 @@ Each stage defines **[output location · agent rules · definition of done (DoD)
 - **DoD → 02:** core problem, target, positioning, success metrics fixed.
 
 #### 02 · Product Plan {#s02}
+> Also called a **Product Brief** in lightweight projects — same artifact, same folder.
 - **Output:** `docs/1-discovery/02-product-plan/`
 - **Rules:** document direction, scope, feature candidates, priority (P0/P1/P2),
   launch hypotheses. **Do not jump to implementation tasks here.**

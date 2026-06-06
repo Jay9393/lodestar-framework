@@ -43,7 +43,11 @@ function splitFrontmatter(text: string): { fm: Record<string, unknown>; body: st
 
 /** Read a `## Heading` section's body from a markdown string. */
 export function readSection(body: string, heading: string): string {
-  const re = new RegExp(`^##\\s+${heading}\\s*$([\\s\\S]*?)(?=^##\\s|\\Z)`, "m");
+  // Escape regex metacharacters in the heading. Terminate at the next `## `
+  // heading or the end of the string ($ without the `m` flag = end of input),
+  // so the LAST section is captured too.
+  const h = heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`(?:^|\\n)##\\s+${h}\\s*\\n([\\s\\S]*?)(?=\\n##\\s|$)`);
   const m = body.match(re);
   return m ? m[1].trim() : "";
 }

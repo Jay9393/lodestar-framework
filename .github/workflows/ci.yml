@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build MCP server
+        working-directory: mcp-server
+        run: |
+          npm install
+          npm run build
+
+      - name: Scaffold smoke test
+        run: |
+          ./scripts/scaffold.sh /tmp/ci-demo --name ci-demo --mode lite
+          test -f /tmp/ci-demo/PROJECT.md
+          test -f /tmp/ci-demo/.lodestar/SPEC.md
+          test -f /tmp/ci-demo/.lodestar/templates/PRD-template.md
+          test -f /tmp/ci-demo/docs/2-design/tech/context-map.md
+          test -f /tmp/ci-demo/docs/1-discovery/04-user-stories/README.md
