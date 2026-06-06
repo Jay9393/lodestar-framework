@@ -62,11 +62,26 @@ export function loadManifest(start?: string): Manifest {
   };
 }
 
-/** True if `dir` (relative to root) contains at least one file matching `pattern`. */
+/** True if `dir` (relative to root) directly contains a file matching `pattern`. */
 export function hasArtifact(root: string, dir: string, pattern: RegExp): boolean {
   const full = join(root, dir);
   if (!existsSync(full)) return false;
   return readdirSync(full).some((f) => pattern.test(f));
+}
+
+/** True if `dir` or any nested subfolder contains a file matching `pattern`. */
+export function hasArtifactRecursive(root: string, dir: string, pattern: RegExp): boolean {
+  const start = join(root, dir);
+  if (!existsSync(start)) return false;
+  const stack = [start];
+  while (stack.length) {
+    const d = stack.pop()!;
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      if (e.isDirectory()) stack.push(join(d, e.name));
+      else if (pattern.test(e.name)) return true;
+    }
+  }
+  return false;
 }
 
 /** Append a decision/gate-skip record under 99-decision-research/gate-skips/. */

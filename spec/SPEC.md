@@ -52,9 +52,14 @@ Four lifecycle phases. Discovery contains the six planning sub-steps.
 │   │   ├── 01-product-strategy/
 │   │   ├── 02-product-plan/
 │   │   ├── 03-prd/
-│   │   └── 04-user-stories/
+│   │   └── 04-user-stories/    # grouped by BUSINESS domain
+│   │       ├── README.md       #   domain map (business domain ↔ PRD)
+│   │       └── <domain>/       #   e.g. ordering/, catalog/ — US-NNN-*.md inside
 │   ├── 2-design/               # ── DESIGN ──
-│   │   ├── tech/               # architecture, data model, API, tech spec
+│   │   ├── tech/               # 1:N tree: business domain → technical context(s)
+│   │   │   ├── context-map.md  #   business domain ↔ tech context mapping
+│   │   │   ├── <domain>/       #   <tech-context>/ nested under its owning domain
+│   │   │   └── shared/         #   generic contexts (auth, notification, …)
 │   │   ├── design/             # screens, flows, UX, design spec
 │   │   └── adr/                # Architecture Decision Records
 │   ├── 3-build/                # ── BUILD ──
@@ -125,6 +130,10 @@ ID prefixes: `BIZ` / `PS` / `PLAN` / `PRD` / `US` / `TASK` / `ADR`, each + a
 3-digit number (e.g. `PRD-003`). Build-phase commits/PRs include the `TASK-NNN`
 in the message so the chain reaches the code.
 
+User Story docs carry a second axis: `domain: <business-domain>` (in addition to
+`parent: [PRD-NNN]`). The PRD is the **traceability** axis; the domain is the
+**structure** axis. They are many-to-many, so both are kept.
+
 ### 4.3 Gates (advisory by default)
 
 Before entering the next stage, run the gate checklist (see each stage's DoD
@@ -171,19 +180,31 @@ Each stage defines **[output location · agent rules · definition of done (DoD)
 - **DoD → 04:** all 8 sections present, ACs verifiable.
 
 #### 04 · User Stories {#s04}
-- **Output:** `docs/1-discovery/04-user-stories/US-NNN-*.md`, `parent: [PRD-NNN]`
+- **Output:** `docs/1-discovery/04-user-stories/<business-domain>/US-NNN-*.md` —
+  one story per file, grouped into **business-domain** folders. Frontmatter:
+  `parent: [PRD-NNN]` + `domain: <business-domain>`. A rough domain map lives in
+  `04-user-stories/README.md` (domain ↔ PRD).
+  Shared/common service layers (auth, notification, …) are **not** business
+  domains and get no US folder; they surface only in design (`tech/shared/`).
 - **Rules:** split when user goal, action, state transition, role/permission,
   success/failure context, or testable unit differs. Each story: who-what-why +
-  testable ACs.
-- **DoD → Design:** every story is a testable unit with ACs.
+  testable ACs. Domains here are *rough groupings* — detailed domain modeling is
+  a design-stage task, not this stage.
+- **DoD → Design:** every story is a testable unit with ACs; a rough domain map exists.
 
 ### 5.2 Design → `2-design/` {#design}
-- **Output:** `tech/` (architecture, data model, API contracts, NFRs),
-  `design/` (screens, flows, component/state UX), `adr/ADR-NNN-*.md` (one
-  hard-to-reverse decision per file).
-- **Rules:** every spec sets `parent` to the US/PRD it serves. A user story with
-  no corresponding spec is flagged as a gap. Framework/library choices get an ADR.
-- **DoD → Build:** every active US is covered by tech + design specs.
+- **First artifact:** `tech/context-map.md` — map each **business domain** (from
+  04-user-stories) to its **technical context(s)**. Default is 1:1 or 1:N: a
+  business domain *owns* its tech contexts. Contexts shared by 2+ business domains
+  go under `tech/shared/` (generic: auth, notification, payment-gateway, audit, …).
+  Business domain ≠ technical domain — record any divergence with a reason here.
+- **Output:** `tech/<domain>/<context>/` (architecture, data model, API, NFRs),
+  `tech/shared/<context>/`, `design/` (screens, flows, UX), `adr/ADR-NNN-*.md`.
+- **Rules:** every spec sets `parent` to the US/PRD it serves. Flag drift/gaps:
+  (a) a US with no spec, (b) a non-`shared/` context used by 2+ domains
+  (ownership ambiguous), (c) a context serving no business domain (over-design).
+  Framework/library choices get an ADR.
+- **DoD → Build:** context map exists; every active US is covered by tech + design specs.
 
 ### 5.3 Build → `3-build/` {#build}
 - **Output:** code in `src/` + `docs/3-build/tasks/TASK-NNN-*.md`, `parent: [US-NNN]`
