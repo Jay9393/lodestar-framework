@@ -1,0 +1,236 @@
+# Lodestar Framework — Specification
+
+> **Canonical source of truth.** All entrypoint files (`AGENTS.md`, `CLAUDE.md`,
+> `GEMINI.md`, `.cursor/rules/lodestar.mdc`) point here. Edit the framework here,
+> not in the entrypoints.
+
+Version: 0.1.0 (draft)
+
+---
+
+## 1. Why Lodestar exists
+
+Coding agents produce inconsistent quality, and as a product is developed the
+work tends to **drift away from its top-level goals**. Each agent invocation
+optimizes locally; nobody holds the north star.
+
+Lodestar is a **structured, model-agnostic framework** that any agent (Claude,
+Codex, Gemini, Cursor, Hermes, …) follows so that:
+
+1. **Consistency across models** — every agent receives the same stage context,
+   the same gates, and the same definition of done, regardless of which model
+   is driving.
+2. **No goal drift** — the top-level goal (the *lodestar*) is pinned and
+   re-injected at every stage; downstream work is continuously checked for
+   alignment with it.
+3. **Traceability** — every line of code traces up through a task → user story →
+   PRD → strategy → business goal.
+
+## 2. Core principles
+
+1. **The stage is the directory.** A project's lifecycle position is visible
+   from its folder layout alone.
+2. **Everything traces upward.** Code/Task → User Story → PRD → Product Plan →
+   Product Strategy → Business Strategy. Linked by IDs.
+3. **Gates ask, they don't (always) block.** Skipping a stage is allowed, but
+   only with a recorded reason. Strict mode hard-blocks; lite mode warns.
+
+---
+
+## 3. Lifecycle & directory structure
+
+Four lifecycle phases. Discovery contains the six planning sub-steps.
+
+```text
+<project>/
+├── PROJECT.md                  # manifest: current stage, mode, traceability index
+├── AGENTS.md / CLAUDE.md / ... # thin entrypoints → this SPEC
+├── docs/
+│   ├── README.md               # document map = source-of-truth chain
+│   ├── 1-discovery/            # ── PLANNING ──
+│   │   ├── 00-business-strategy/
+│   │   ├── 01-product-strategy/
+│   │   ├── 02-product-plan/
+│   │   ├── 03-prd/
+│   │   └── 04-user-stories/
+│   ├── 2-design/               # ── DESIGN ──
+│   │   ├── tech/               # architecture, data model, API, tech spec
+│   │   ├── design/             # screens, flows, UX, design spec
+│   │   └── adr/                # Architecture Decision Records
+│   ├── 3-build/                # ── BUILD ──
+│   │   └── tasks/              # implementation notes per TASK
+│   ├── 4-operate/              # ── OPERATE ──
+│   │   ├── runbooks/
+│   │   ├── metrics/            # event schema, dashboard definitions
+│   │   └── incidents/
+│   └── 99-decision-research/   # cross-cutting
+│       ├── superseded/         # retired docs (kept for context)
+│       ├── reviews/
+│       └── gate-skips/         # logged reasons for skipping a gate
+└── src/ ...                    # code (project-type specific)
+```
+
+Phase → sub-step map:
+
+| Lifecycle phase | Folder | Sub-steps |
+|---|---|---|
+| Planning (기획) | `1-discovery/` | 00 business → 01 strategy → 02 plan → 03 PRD → 04 user stories |
+| Design (설계)   | `2-design/`   | tech / design / adr |
+| Build (구현)    | `3-build/`    | tasks + code in `src/` |
+| Operate (운영)  | `4-operate/`  | runbooks / metrics / incidents |
+
+---
+
+## 4. Conventions
+
+### 4.1 Manifest — `PROJECT.md`
+
+Every project root has exactly one. **Agents read this first**, before any work.
+
+```yaml
+---
+project: <name>
+stage: discovery            # discovery | design | build | operate
+mode: strict | lite         # gate strictness (chosen at scaffold time)
+updated: 2026-06-06
+---
+## North Star
+<one paragraph: the top-level goal this project must not drift from.
+Derived from 00-business-strategy + 01-product-strategy.>
+
+## Traceability Index
+- BIZ-001 → PS-001 → PLAN-001 → PRD-003 → US-012 → TASK-045
+
+## Active gate-skips
+- 2026-06-04: built US-009 without a PRD
+  (reason: docs/99-decision-research/gate-skips/2026-06-04-us009.md)
+```
+
+### 4.2 Traceability IDs + frontmatter
+
+Every document starts with frontmatter linking to its parent.
+
+```yaml
+---
+id: PRD-003
+stage: discovery
+status: draft | active | superseded
+parent: [PLAN-001]          # upstream artifact ID(s)
+created: 2026-06-06
+updated: 2026-06-06
+---
+```
+
+ID prefixes: `BIZ` / `PS` / `PLAN` / `PRD` / `US` / `TASK` / `ADR`, each + a
+3-digit number (e.g. `PRD-003`). Build-phase commits/PRs include the `TASK-NNN`
+in the message so the chain reaches the code.
+
+### 4.3 Gates (advisory by default)
+
+Before entering the next stage, run the gate checklist (see each stage's DoD
+below). On an unmet item:
+
+- **lite mode** → warn, then allow with a logged reason in
+  `99-decision-research/gate-skips/` and an entry in `PROJECT.md`.
+- **strict mode** → block the next-stage action until the item is satisfied or
+  explicitly waived.
+
+---
+
+## 5. Per-stage agent guidelines
+
+Each stage defines **[output location · agent rules · definition of done (DoD)]**.
+
+### 5.1 Discovery → `1-discovery/`
+
+#### 00 · Business Strategy {#s00}
+- **Output:** `docs/1-discovery/00-business-strategy/`
+- **Rules:** define market, customer, problem, opportunity, business goal. Tag
+  every claim `[assumption]` or `[validated]`. Numeric goals must be measurable.
+- **DoD → 01:** market, customer, problem, goal all defined in one document.
+
+#### 01 · Product Strategy {#s01}
+- **Output:** `docs/1-discovery/01-product-strategy/`
+- **Rules:** fix the core problem in one sentence; define target segment,
+  positioning, success metrics. If it contradicts 00, stop and report.
+- **DoD → 02:** core problem, target, positioning, success metrics fixed.
+
+#### 02 · Product Plan {#s02}
+- **Output:** `docs/1-discovery/02-product-plan/`
+- **Rules:** document direction, scope, feature candidates, priority (P0/P1/P2),
+  launch hypotheses. **Do not jump to implementation tasks here.**
+- **DoD → 03:** scope, priority, launch hypotheses fixed.
+
+#### 03 · PRD {#s03}
+- **Output:** `docs/1-discovery/03-prd/PRD-NNN-*.md` (one problem per file)
+- **Rules:** a PRD is a **problem-solving unit**, not a feature list. Split when
+  the user problem, policy, release unit, key state, or data lifecycle differs.
+  Required sections (8): user problem · scope · policy · glossary · screens/flows
+  · edge cases · permissions · **acceptance criteria**. ACs must be verifiable
+  (subject + condition + expected result).
+- **DoD → 04:** all 8 sections present, ACs verifiable.
+
+#### 04 · User Stories {#s04}
+- **Output:** `docs/1-discovery/04-user-stories/US-NNN-*.md`, `parent: [PRD-NNN]`
+- **Rules:** split when user goal, action, state transition, role/permission,
+  success/failure context, or testable unit differs. Each story: who-what-why +
+  testable ACs.
+- **DoD → Design:** every story is a testable unit with ACs.
+
+### 5.2 Design → `2-design/` {#design}
+- **Output:** `tech/` (architecture, data model, API contracts, NFRs),
+  `design/` (screens, flows, component/state UX), `adr/ADR-NNN-*.md` (one
+  hard-to-reverse decision per file).
+- **Rules:** every spec sets `parent` to the US/PRD it serves. A user story with
+  no corresponding spec is flagged as a gap. Framework/library choices get an ADR.
+- **DoD → Build:** every active US is covered by tech + design specs.
+
+### 5.3 Build → `3-build/` {#build}
+- **Output:** code in `src/` + `docs/3-build/tasks/TASK-NNN-*.md`, `parent: [US-NNN]`
+- **Rules:** every task traces to a US via `parent`. Commit/PR messages include
+  `TASK-NNN`. If implementation must diverge from spec, **stop and update the
+  spec first** — code never runs ahead of spec. Tests verify the US's ACs.
+- **DoD → Operate:** ACs met, tests pass, deployable.
+
+### 5.4 Operate → `4-operate/` {#operate}
+- **Output:** `runbooks/`, `metrics/` (event schema + dashboards), `incidents/`.
+- **Rules:** implement the success metrics from 02/PRD as real event
+  schema/dashboards. Postmortems go in `incidents/`. When a feature is retired,
+  move its docs to `99-decision-research/superseded/` and update the manifest.
+- **DoD:** metrics collecting, runbooks exist, incident process defined.
+
+### 5.5 Cross-cutting → `99-decision-research/` {#research}
+Superseded docs, reviews, gate-skip logs. Consulted only to answer *"why was this
+decided?"*. To revive a superseded claim, first patch the current source-of-truth.
+
+---
+
+## 6. Enforcement layers
+
+Lodestar is delivered as a ladder; pick how strong you want enforcement to be.
+
+| Layer | Mechanism | Strength | Portability |
+|---|---|---|---|
+| L1 | Context files (entrypoints → this SPEC) | advisory | all agents |
+| L2 | Skills / scaffold scripts | medium | per-agent |
+| L3 | Hooks (block tool calls on unmet gate) | strong | per-agent (e.g. Claude Code) |
+| L4 | **MCP server** (`lodestar-mcp`) | strong | all MCP-capable agents |
+
+The MCP server exposes the framework as callable tools so enforcement is both
+**model-agnostic and strong**:
+
+- `get_stage` — current lifecycle stage + mode from `PROJECT.md`
+- `get_north_star` — the pinned top-level goal (anti-drift injection)
+- `check_gate` — run the next-stage checklist; returns pass/fail per item
+- `check_alignment` — return north star + an artifact for the agent to judge drift
+- `log_decision` — append a gate-skip / decision record to `99-decision-research/`
+
+## 7. How an agent should use Lodestar
+
+1. Read `PROJECT.md` (stage, mode, north star) **before doing anything**.
+2. Read this SPEC's section for the current stage.
+3. Keep the north star in view; if the requested work conflicts with it, surface
+   the conflict instead of silently proceeding.
+4. Write outputs to the correct stage folder with proper frontmatter + `parent`.
+5. Before moving to the next stage, run the gate (or `check_gate`). Log any skip.
+6. Update `PROJECT.md` (stage, traceability index) when a stage completes.

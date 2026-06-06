@@ -1,0 +1,16 @@
+---
+description: Lodestar framework rules for {{PROJECT_NAME}}
+alwaysApply: true
+---
+
+This project follows the Lodestar framework.
+
+- Read `PROJECT.md` (stage, mode, north star) and `.lodestar/SPEC.md` (full spec)
+  before working. Follow `AGENTS.md`.
+- Lifecycle: `1-discovery → 2-design → 3-build → 4-operate`; the stage is the
+  directory.
+- Keep the north star in view; surface conflicts instead of proceeding.
+- Write outputs to the correct stage folder with frontmatter + `parent:` link.
+- Never skip a stage silently — log the reason in
+  `docs/99-decision-research/gate-skips/` and update `PROJECT.md`.
+- Implementation tasks trace to a User Story; include `TASK-NNN` in commits.

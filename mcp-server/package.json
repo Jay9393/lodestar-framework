@@ -1,0 +1,27 @@
+{
+  "name": "lodestar-mcp",
+  "version": "0.1.0",
+  "description": "MCP server that enforces the Lodestar framework: stage, north star, gates, alignment, and decision logging — model-agnostic.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "lodestar-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "yaml": "^2.5.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0"
+  }
+}

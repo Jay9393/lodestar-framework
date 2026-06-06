@@ -1,0 +1,74 @@
+import { hasArtifact, type Stage } from "./project.js";
+
+export interface GateItem {
+  id: string;
+  description: string;
+  /** Automated check against the filesystem, or null if it needs human/agent judgment. */
+  auto: ((root: string) => boolean) | null;
+}
+
+export interface GateResult {
+  from: Stage;
+  to: Stage | "(done)";
+  items: { id: string; description: string; status: "pass" | "fail" | "manual" }[];
+  autoPassed: boolean;
+}
+
+const PRD_RE = /^PRD-\d+.*\.md$/;
+const US_RE = /^US-\d+.*\.md$/;
+
+/** Checklist to ENTER the stage that follows `from`. */
+const GATES: Record<Stage, { to: Stage | "(done)"; items: GateItem[] }> = {
+  discovery: {
+    to: "design",
+    items: [
+      { id: "biz", description: "Business strategy doc exists (market/customer/problem/goal).", auto: (r) => hasArtifact(r, "docs/1-discovery/00-business-strategy", /\.md$/) },
+      { id: "strategy", description: "Product strategy fixes core problem, target, positioning, metrics.", auto: (r) => hasArtifact(r, "docs/1-discovery/01-product-strategy", /\.md$/) },
+      { id: "plan", description: "Product plan fixes scope, priority, launch hypotheses.", auto: (r) => hasArtifact(r, "docs/1-discovery/02-product-plan", /\.md$/) },
+      { id: "prd", description: "At least one PRD exists with 8 sections + verifiable ACs.", auto: (r) => hasArtifact(r, "docs/1-discovery/03-prd", PRD_RE) },
+      { id: "us", description: "User stories are testable units with ACs (parent = PRD).", auto: (r) => hasArtifact(r, "docs/1-discovery/04-user-stories", US_RE) },
+    ],
+  },
+  design: {
+    to: "build",
+    items: [
+      { id: "tech", description: "Tech specs cover every active user story.", auto: (r) => hasArtifact(r, "docs/2-design/tech", /\.md$/) },
+      { id: "design", description: "Design specs cover every active user story.", auto: (r) => hasArtifact(r, "docs/2-design/design", /\.md$/) },
+      { id: "coverage", description: "No active US is left without a corresponding spec.", auto: null },
+    ],
+  },
+  build: {
+    to: "operate",
+    items: [
+      { id: "tasks", description: "Tasks trace to user stories (parent = US).", auto: (r) => hasArtifact(r, "docs/3-build/tasks", /^TASK-\d+.*\.md$/) },
+      { id: "ac", description: "Acceptance criteria met and tests pass.", auto: null },
+      { id: "deployable", description: "Change is deployable.", auto: null },
+    ],
+  },
+  operate: {
+    to: "(done)",
+    items: [
+      { id: "metrics", description: "Success metrics implemented as event schema / dashboards.", auto: (r) => hasArtifact(r, "docs/4-operate/metrics", /\.md$/) },
+      { id: "runbooks", description: "Runbooks exist.", auto: (r) => hasArtifact(r, "docs/4-operate/runbooks", /\.md$/) },
+      { id: "incidents", description: "Incident process defined.", auto: null },
+    ],
+  },
+};
+
+export function checkGate(root: string, from: Stage): GateResult {
+  const gate = GATES[from];
+  const items = gate.items.map((it) => {
+    if (it.auto === null) return { id: it.id, description: it.description, status: "manual" as const };
+    return {
+      id: it.id,
+      description: it.description,
+      status: it.auto(root) ? ("pass" as const) : ("fail" as const),
+    };
+  });
+  return {
+    from,
+    to: gate.to,
+    items,
+    autoPassed: items.every((i) => i.status !== "fail"),
+  };
+}
