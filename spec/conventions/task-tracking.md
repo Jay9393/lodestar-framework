@@ -44,17 +44,31 @@ tracker: files   # files (default) | linear
 Nothing external. The rules above are the whole system.
 
 ### `tracker: linear` (optional projection)
-For teams who want a board/assignees/notifications. Constraints that keep it from
-becoming a second source of truth:
+For teams who want a board/assignees/notifications. The dividing line:
 
-1. **The repo TASK file is created first and stays canonical.** The Linear issue is
-   a mirror of it.
-2. **One-way sync: repo → Linear.** Status/title/body flow from the file to the issue.
-   (If Linear edits flow back, treat them as a *proposal* an agent reconciles into the
-   file — the file still wins.)
+> **Durable knowledge → repo. People/process state → the tracker.**
+
+#### What lives where
+
+| Lives in the **repo** (canonical) | Lives in **Linear** (mirror) |
+|---|---|
+| Planning & design: BIZ / PS / PLAN / PRD / US / specs / ADR | — (never) |
+| TASK **content**: scope, **implementation design/notes**, which ACs it verifies, links | A thin issue: summary + links back to the TASK file / US / PR |
+| Decision logs, traceability | Assignee, board status, cycle/sprint, estimate, comments |
+
+**Implementation design stays in the repo TASK file** — not in the Linear issue
+body. Linear body is not version-controlled, not readable by an unauthenticated
+agent, and duplicating design there creates drift. The issue points *to* the repo.
+
+#### Sync rules
+
+1. **The repo TASK file is created first and stays canonical** for all content.
+2. **Content syncs one-way: repo → Linear** (title, summary, links). **Status may
+   sync back Linear → repo** — humans drive the card day-to-day; an agent reconciles
+   the card's status into the file's `status` so the repo remains the record.
 3. **The Lodestar ID is canonical.** Put `TASK-NNN` in the Linear issue title; store
    the back-link in the file: `tracker_ref: <linear-issue-id>`.
-4. **Planning artifacts never move to Linear.** Only the TASK execution layer (and
+4. **Planning artifacts never go to Linear.** Only the TASK execution layer (and
    optionally operate-stage incidents) may be mirrored.
 5. The integration is **optional and pluggable** — a project with no Linear access
    still works fully on `files`.
