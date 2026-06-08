@@ -93,6 +93,7 @@ lodestar-framework/
 ├── templates/            # entrypoints + docs-tree + PROJECT.md + artifacts/, copied by scaffold
 │   └── artifacts/        # BIZ/PS/PLAN/PRD/US/TASK/ADR doc templates
 ├── scripts/scaffold.sh   # creates the framework in a target project
+├── skills/               # agent skills (e.g. lodestar-new) to create projects
 ├── mcp-server/           # lodestar-mcp: enforcement as MCP tools (L4)
 ├── hooks/                # Claude Code hook examples (L3)
 └── examples/             # worked example projects

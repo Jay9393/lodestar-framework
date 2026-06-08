@@ -7,6 +7,10 @@ All notable changes to this project are documented here. Format based on
 ## [Unreleased]
 
 ### Added
+- `lodestar-new` agent skill (`skills/lodestar-new/SKILL.md`): create a new project
+  via an agent, asking where to put it (current dir / under the framework / custom
+  path), the name, and the gate mode, then running `scaffold.sh`. Projects are
+  independent siblings; the framework is the tool.
 - Build conventions: `spec/conventions/server.md` and `frontend.md` (clean/hexagonal —
   use-cases, ports/adapters, repository pattern, migration rules, testing with mocked
   IO, plus error handling / validation / config / observability). Vendored to
