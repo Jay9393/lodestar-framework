@@ -48,7 +48,13 @@ toward the core; the **api layer is the frontend's adapter** (mirrors server rul
 ## 4. Component conventions
 
 - **Presentational vs container** split; style via the **design system / tokens** —
-  no ad-hoc magic colors/spacing.
+  no ad-hoc magic colors/spacing. The design system is **Material 3** (see
+  `.lodestar/conventions/design-system.md`): components bind to the **M3 tokens**
+  produced in `docs/2-design/design/design-system.md` (color roles, type scale,
+  shape, elevation), and screens implement the **named M3 components + states** from
+  the UX specs. No raw hex/px in a component — reference a token. The M3
+  implementation library (Material Web / Angular Material / MUI / Compose / Flutter)
+  is the one fixed in the design-stage ADR.
 - Every data view handles the **required states**: `loading / empty / error /
   success / permission-denied` (this matches the design-spec `States` section).
 - **Accessibility baseline**: semantic markup, keyboard navigation, contrast.

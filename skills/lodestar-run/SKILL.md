@@ -24,8 +24,12 @@ with proper frontmatter + `parent`. Per stage:
 - **discovery** — walk the sub-steps in order: `00-business-strategy → 01-product-
   strategy → 02-product-plan → 03-prd → 04-user-stories` (stories grouped by business
   domain). Advance a sub-step only when its DoD is met.
-- **design** — start with `tech/context-map.md`, then tech + design specs per the
-  build conventions (name use-cases, ports, contracts). One ADR per hard decision.
+- **design** — start with `tech/context-map.md`, then tech specs per the build
+  conventions (name use-cases, ports, contracts). One ADR per hard decision. When you
+  reach the **UX/UI design** work (`design/` — screens, flows, design system),
+  **invoke the `lodestar-design` skill** to produce `design/design-system.md` (M3
+  tokens) then the per-screen UX specs (`.lodestar/conventions/design-system.md`);
+  resume here for any remaining tech/ADR work afterward.
 - **build** — create `TASK-NNN` files (`parent: [US]`), implement following
   `.lodestar/conventions/{server,frontend}.md`, write tests (mock external IO). If
   `tracker: linear`, mirror tasks per `.lodestar/conventions/task-tracking.md`.

@@ -66,10 +66,10 @@ echo "→ .lodestar/SPEC.md (vendored framework spec)"
 mkdir -p "$TARGET/.lodestar"
 cp "$SPEC" "$TARGET/.lodestar/SPEC.md"
 
-echo "→ .lodestar/templates/ (artifact templates: BIZ/PS/PLAN/PRD/US/TASK/ADR)"
+echo "→ .lodestar/templates/ (artifact templates: BIZ/PS/PLAN/PRD/US/TASK/ADR + DESIGN-SYSTEM/UX-SPEC)"
 cp -R "$TEMPLATES/artifacts/" "$TARGET/.lodestar/templates/"
 
-echo "→ .lodestar/conventions/ (server + frontend design/impl rules)"
+echo "→ .lodestar/conventions/ (server + frontend + design-system/M3 rules)"
 cp -R "$REPO_DIR/spec/conventions/" "$TARGET/.lodestar/conventions/"
 
 # --- substitute placeholders ---------------------------------------------

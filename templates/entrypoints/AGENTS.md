@@ -23,6 +23,10 @@ This project follows the **Lodestar framework**. Before doing anything:
   `.lodestar/conventions/frontend.md` (frontend): logic in use-cases, IO behind
   ports/adapters, repository pattern for DB/cache, schema only via migrations,
   and tests for every use-case/API with external calls mocked.
+- For UX/UI design, follow `.lodestar/conventions/design-system.md` — base design
+  system is **Material 3**: produce `docs/2-design/design/design-system.md` (M3
+  tokens) then screen specs referencing named M3 components + tokens (no raw hex/px),
+  covering loading/empty/error/success/denied states and the a11y baseline.
 
 ## Conduct
 

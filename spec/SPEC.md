@@ -255,14 +255,25 @@ Each stage defines **[output location · agent rules · definition of done (DoD)
   go under `tech/shared/` (generic: auth, notification, payment-gateway, audit, …).
   Business domain ≠ technical domain — record any divergence with a reason here.
 - **Output:** `tech/<domain>/<context>/` (architecture, data model, API, NFRs),
-  `tech/shared/<context>/`, `design/` (screens, flows, UX), `adr/ADR-NNN-*.md`.
+  `tech/shared/<context>/`, `design/` (UX/UI), `adr/ADR-NNN-*.md`.
+- **UX/UI design** lives in `design/` and follows
+  `.lodestar/conventions/design-system.md` — base design system is **Material 3**.
+  First produce `design/design-system.md` (the project's M3 token set: color roles
+  from a seed, type scale, shape, elevation, state layers); then per-screen UX specs
+  that reference **named M3 components + tokens** (no raw hex/px) and specify every
+  state (`loading/empty/error/success/permission-denied`). The M3 *implementation
+  library* is a per-project ADR; the *design language* is fixed.
 - **Rules:** every spec sets `parent` to the US/PRD it serves. Design toward the
-  build conventions (`.lodestar/conventions/{server,frontend}.md`) — e.g. name the
-  use-cases, the ports (repositories/external clients), and the boundary contracts.
-  Flag drift/gaps: (a) a US with no spec, (b) a non-`shared/` context used by 2+
-  domains (ownership ambiguous), (c) a context serving no business domain
-  (over-design). Framework/library choices get an ADR.
-- **DoD → Build:** context map exists; every active US is covered by tech + design specs.
+  build conventions (`.lodestar/conventions/{server,frontend,design-system}.md`) —
+  name the use-cases, the ports (repositories/external clients), the boundary
+  contracts, and the M3 tokens/components. Flag drift/gaps: (a) a US with no spec,
+  (b) a non-`shared/` context used by 2+ domains (ownership ambiguous), (c) a context
+  serving no business domain (over-design), (d) a screen spec naming raw hex/px
+  instead of M3 tokens. Framework/library choices (incl. the M3 implementation lib)
+  get an ADR.
+- **DoD → Build:** context map exists; every active US is covered by tech + design
+  specs; `design/design-system.md` (M3 tokens) exists; every screen is specified with
+  named M3 components + states; the design-system UX/a11y checklist passes.
 
 ### 5.3 Build → `3-build/` {#build}
 - **Output:** code in `src/` + `docs/3-build/tasks/TASK-NNN-*.md`, `parent: [US-NNN]`
@@ -330,7 +341,10 @@ The MCP server exposes the framework as callable tools so enforcement is both
    gate and ask the user to confirm advancing** — a transition is never silent.
 7. Update `PROJECT.md` (stage, traceability index) when a stage completes.
 
-This protocol is operationalized by three Claude Code skills (optional, model-agnostic
+This protocol is operationalized by Claude Code skills (optional, model-agnostic
 underneath): **`lodestar-new`** (scaffold + offer to start), **`lodestar-run`** (drive
-the current stage), and **`lodestar-gate`** (verify + confirm + advance). An agent
-without skills simply follows steps 1–7 directly.
+the current stage), **`lodestar-gate`** (verify + confirm + advance), and
+**`lodestar-design`** (the UX/UI design sub-driver — `lodestar-run` invokes it on
+reaching the design stage's UX/UI work, and a user may invoke it directly). An agent
+without skills simply follows steps 1–7 directly, applying
+`.lodestar/conventions/design-system.md` during the design stage.

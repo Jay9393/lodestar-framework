@@ -7,6 +7,19 @@ All notable changes to this project are documented here. Format based on
 ## [Unreleased]
 
 ### Added
+- UX/UI design layer (Material 3 base): `spec/conventions/design-system.md` makes
+  **Material 3** the project's base design system — tokens (color roles from a seed,
+  type scale, shape, elevation, state layers) are the source of truth; screen specs
+  reference named M3 components + tokens (no raw hex/px); UX/a11y checklist as the
+  design-stage DoD. Platform-agnostic: the M3 *implementation library* (Material Web /
+  Angular Material / MUI / Compose / Flutter) is a per-project ADR. Adds artifact
+  templates `DESIGN-SYSTEM-template.md` + `UX-SPEC-template.md`, the `lodestar-design`
+  skill (invoked directly or auto-triggered by `lodestar-run` on reaching UX/UI work),
+  and wires the convention into `frontend.md`, `SPEC.md` §5.2, the `design/` README,
+  and the `AGENTS.md` entrypoint. Discipline borrowed from anthropics/skills
+  (frontend-design's "intent-first", brand-guidelines' token-spec-as-artifact) and
+  the ui-ux-pro-max UX/a11y checklist; their bespoke design-system *generators* are
+  intentionally not adopted (they conflict with a fixed M3 base).
 - Stage orchestration skills: `lodestar-run` (drives the current stage's work, one
   question at a time, then gates) and `lodestar-gate` (verifies the gate, asks the
   user to confirm/skip, files the gate report, advances `PROJECT.md`). `lodestar-new`
