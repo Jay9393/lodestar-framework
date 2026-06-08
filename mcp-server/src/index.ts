@@ -16,7 +16,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve, sep } from "node:path";
-import { loadManifest, writeGateSkip, type Stage } from "./project.js";
+import { loadManifest, writeDecision, type Stage } from "./project.js";
 
 /** Resolve a user-supplied path and reject anything outside the project root. */
 function resolveInRoot(root: string, p: string): string {
@@ -64,16 +64,18 @@ server.tool(
     const stage = (from as Stage) ?? m.stage;
     const result = checkGate(m.root, stage);
     const failed = result.items.filter((i) => i.status === "fail");
-    return text({
-      ...result,
-      mode: m.mode,
-      verdict:
-        failed.length === 0
-          ? `Gate clear (auto-checks). ${result.items.filter((i) => i.status === "manual").length} manual item(s) need confirmation.`
-          : m.mode === "strict"
-            ? `BLOCKED (strict mode): ${failed.length} unmet item(s). Satisfy them or waive explicitly.`
-            : `WARN (lite mode): ${failed.length} unmet item(s). You may proceed only with a logged reason via log_decision.`,
-    });
+    const manual = result.items.filter((i) => i.status === "manual").length;
+    let verdict: string;
+    if (result.userChallengeOpen) {
+      verdict = `BLOCKED: an unresolved User-Challenge decision exists. Present the options and ask the human — this cannot be bypassed by mode. Mark it resolved once decided.`;
+    } else if (failed.length === 0) {
+      verdict = `Gate clear (auto-checks). ${manual} manual item(s) need confirmation.`;
+    } else if (m.mode === "strict") {
+      verdict = `BLOCKED (strict mode): ${failed.length} unmet item(s). Satisfy them or waive explicitly.`;
+    } else {
+      verdict = `WARN (lite mode): ${failed.length} unmet item(s). You may proceed only with a logged reason via log_decision.`;
+    }
+    return text({ ...result, mode: m.mode, verdict });
   }
 );
 
@@ -102,17 +104,23 @@ server.tool(
 
 server.tool(
   "log_decision",
-  "Record a gate-skip or notable decision under docs/99-decision-research/gate-skips/.",
+  "Record a decision (with its class) under docs/99-decision-research/gate-skips/. Use for gate-skips, Taste choices, and User-Challenge escalations.",
   {
-    title: z.string().min(1).describe("Short title of the decision/skip."),
-    reason: z.string().min(1).describe("Why the gate was skipped or the decision was made, and the risk accepted."),
+    title: z.string().min(1).describe("Short title of the decision."),
+    reason: z.string().min(1).describe("Why the decision was made / the gate was skipped, and the risk accepted."),
+    decision_class: z.enum(["mechanical", "taste", "user-challenge"]).describe("mechanical = obvious; taste = defensible default; user-challenge = scope/cost/north-star/hard-to-reverse, needs the human."),
+    resolved: z.boolean().default(false).describe("Whether the decision is settled. An unresolved user-challenge hard-blocks the gate."),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "date must be YYYY-MM-DD").describe("ISO date YYYY-MM-DD (the agent supplies this)."),
     slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "slug must be kebab-case [a-z0-9-]").describe("kebab-case slug for the filename."),
   },
-  async ({ title, reason, date, slug }) => {
+  async ({ title, reason, decision_class, resolved, date, slug }) => {
     const m = loadManifest();
-    const file = writeGateSkip(m.root, slug, title, reason, date);
-    return text({ written: file, note: "Also add a one-line entry under '## Active gate-skips' in PROJECT.md." });
+    const file = writeDecision(m.root, slug, title, reason, date, decision_class, resolved);
+    const note =
+      decision_class === "user-challenge" && !resolved
+        ? "This is an UNRESOLVED user-challenge — it blocks the gate until a human decides. Present options and ask; then re-log with resolved=true."
+        : "Also add a one-line entry under '## Active gate-skips' or '## Gate Reports' in PROJECT.md.";
+    return text({ written: file, note });
   }
 );
 

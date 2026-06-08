@@ -113,16 +113,20 @@ Derived from 00-business-strategy + 01-product-strategy.>
 
 ### 4.2 Traceability IDs + frontmatter
 
-Every document starts with frontmatter linking to its parent.
+Every document starts with **lean** frontmatter linking to its parent. Keep it
+to these fields — the folder already encodes the stage:
 
 ```yaml
 ---
 id: PRD-003
-stage: discovery
 status: draft | active | superseded
 parent: [PLAN-001]          # upstream artifact ID(s)
-created: 2026-06-06
-updated: 2026-06-06
+updated: 2026-06-08
+# optional, where they apply:
+# domain: <business-domain> # User Stories (structure axis)
+# role: <actor>            # User Stories (role/permission axis)
+# children: [US-012]       # PRDs (downstream links)
+# supersedes: PRD-001      # on a split/merge
 ---
 ```
 
@@ -134,6 +138,18 @@ User Story docs carry a second axis: `domain: <business-domain>` (in addition to
 `parent: [PRD-NNN]`). The PRD is the **traceability** axis; the domain is the
 **structure** axis. They are many-to-many, so both are kept.
 
+Ready-to-use skeletons for every artifact live in `templates/artifacts/`
+(`BIZ`/`PS`/`PLAN`/`PRD`/`US`/`TASK`/`ADR`) and are vendored into each project at
+`.lodestar/templates/`.
+
+**Epistemic tags.** In strategy/discovery docs, tag every claim `[assumption]`,
+`[validated: source/date]`, or `[hypothesis: testing via …]`. Prefer `[unknown]`
+over an invented number. This makes "what still needs proving" machine-greppable.
+
+**Living docs.** Update by patching sections — never wholesale-rewrite. Append to
+a doc's Decision Log (PRD/ADR/strategy docs) rather than editing past entries; bump
+`updated`. Supersede, don't delete: move retired docs to `99-decision-research/`.
+
 ### 4.3 Gates (advisory by default)
 
 Before entering the next stage, run the gate checklist (see each stage's DoD
@@ -143,6 +159,40 @@ below). On an unmet item:
   `99-decision-research/gate-skips/` and an entry in `PROJECT.md`.
 - **strict mode** → block the next-stage action until the item is satisfied or
   explicitly waived.
+
+**Gate report (machine-checkable).** When you complete a stage, append a parseable
+block to `PROJECT.md` under `## Gate Reports` *before* transitioning. `check_gate`
+verifies this block exists — a gate isn't "passed" until the report is filed:
+
+```text
+### GATE: discovery→design
+- status: passed | skipped
+- date: 2026-06-08
+- unresolved-user-challenges: none
+- checklist: biz, strategy, plan, prd, us, domain-map — all met
+```
+
+### 4.4 Decision classification
+
+Every decision an agent faces is one of three classes. This governs what the
+agent may resolve on its own versus escalate:
+
+| Class | Meaning | Agent behavior |
+|---|---|---|
+| **Mechanical** | One obviously-correct answer (naming, formatting, an unambiguous fix) | Resolve silently. |
+| **Taste** | A defensible default exists but reasonable people differ | Decide, then surface the choice at the next gate. |
+| **User-Challenge** | Changes scope, cost, the north star, or is hard to reverse | **Never auto-decide.** Present options and ask the human. |
+
+Record Taste and User-Challenge decisions with `log_decision` (it stores the
+class). **An unresolved User-Challenge blocks the gate in any mode** — user
+sovereignty is not waivable by `mode`. Present and ask; never act around it.
+
+### 4.5 Agent conduct
+
+- **Ask one question at a time.** Do not batch decision questions; resolve, then ask the next.
+- **Offer ≥2 alternatives** (at least one minimal, one ideal) before locking a non-trivial choice.
+- **No sycophancy.** State a position and the evidence that would change it; don't
+  open with "great idea". When models agree against the user, still present and ask.
 
 ---
 
@@ -188,9 +238,14 @@ Each stage defines **[output location · agent rules · definition of done (DoD)
   Shared/common service layers (auth, notification, …) are **not** business
   domains and get no US folder; they surface only in design (`tech/shared/`).
 - **Rules:** split when user goal, action, state transition, role/permission,
-  success/failure context, or testable unit differs. Each story: who-what-why +
-  testable ACs. Domains here are *rough groupings* — detailed domain modeling is
-  a design-stage task, not this stage.
+  success/failure context, or testable unit differs (the INVEST "Small" rule: if a
+  story needs > ~3 Given/When/Then scenarios or spans two of the above, split it).
+  Write the story as a **Job Story** — "When `<situation>`, I want `<motivation>`,
+  so I can `<outcome>`" — because the *When* clause maps 1:1 onto an acceptance
+  criterion's `Given`, so the story compiles straight into a test. Keep the role
+  in frontmatter (`role:`). Use the Connextra form ("As a `<role>`…") only when the
+  role distinction is the essence of the story. Domains here are *rough groupings* —
+  detailed domain modeling is a design-stage task.
 - **DoD → Design:** every story is a testable unit with ACs; a rough domain map exists.
 
 ### 5.2 Design → `2-design/` {#design}
@@ -243,9 +298,11 @@ The MCP server exposes the framework as callable tools so enforcement is both
 
 - `get_stage` — current lifecycle stage + mode from `PROJECT.md`
 - `get_north_star` — the pinned top-level goal (anti-drift injection)
-- `check_gate` — run the next-stage checklist; returns pass/fail per item
+- `check_gate` — run the next-stage checklist; also verifies the gate report block
+  exists and that no unresolved **User-Challenge** decision remains (which hard-blocks)
 - `check_alignment` — return north star + an artifact for the agent to judge drift
-- `log_decision` — append a gate-skip / decision record to `99-decision-research/`
+- `log_decision` — record a decision (with its class: mechanical/taste/user-challenge)
+  under `99-decision-research/`
 
 ## 7. How an agent should use Lodestar
 
@@ -253,6 +310,10 @@ The MCP server exposes the framework as callable tools so enforcement is both
 2. Read this SPEC's section for the current stage.
 3. Keep the north star in view; if the requested work conflicts with it, surface
    the conflict instead of silently proceeding.
-4. Write outputs to the correct stage folder with proper frontmatter + `parent`.
-5. Before moving to the next stage, run the gate (or `check_gate`). Log any skip.
-6. Update `PROJECT.md` (stage, traceability index) when a stage completes.
+4. Write outputs to the correct stage folder with proper frontmatter + `parent`,
+   starting from the matching `templates/artifacts/` skeleton.
+5. Classify each decision (§4.4): resolve Mechanical silently, decide Taste and
+   surface it, escalate User-Challenge to the human. Ask one question at a time.
+6. Before moving to the next stage, run the gate (or `check_gate`), file the gate
+   report block in `PROJECT.md`, and log any skip or notable decision.
+7. Update `PROJECT.md` (stage, traceability index) when a stage completes.

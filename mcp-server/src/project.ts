@@ -88,18 +88,48 @@ export function hasArtifactRecursive(root: string, dir: string, pattern: RegExp)
   return false;
 }
 
-/** Append a decision/gate-skip record under 99-decision-research/gate-skips/. */
-export function writeGateSkip(
+export type DecisionClass = "mechanical" | "taste" | "user-challenge";
+
+/** Append a decision record (with its class) under 99-decision-research/gate-skips/. */
+export function writeDecision(
   root: string,
   slug: string,
   title: string,
   reason: string,
-  date: string
+  date: string,
+  decisionClass: DecisionClass,
+  resolved: boolean
 ): string {
   const dir = join(root, "docs/99-decision-research/gate-skips");
   mkdirSync(dir, { recursive: true });
   const file = join(dir, `${date}-${slug}.md`);
-  const content = `# Gate skip: ${title}\n\n- date: ${date}\n\n## Reason\n\n${reason}\n`;
+  const content =
+    `---\nclass: ${decisionClass}\nresolved: ${resolved}\ndate: ${date}\n---\n\n` +
+    `# Decision: ${title}\n\n## Reason / Risk accepted\n\n${reason}\n`;
   writeFileSync(file, content, "utf8");
   return file;
+}
+
+/** Count decision records that are class=user-challenge and resolved=false. */
+export function countOpenUserChallenges(root: string): number {
+  const dir = join(root, "docs/99-decision-research/gate-skips");
+  if (!existsSync(dir)) return 0;
+  let n = 0;
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".md")) continue;
+    const t = readFileSync(join(dir, f), "utf8");
+    if (/(^|\n)class:\s*user-challenge\b/.test(t) && /(^|\n)resolved:\s*false\b/.test(t)) n++;
+  }
+  return n;
+}
+
+/** True if PROJECT.md contains a `### GATE: <from>→<to>` (or `->`) report block. */
+export function hasGateReport(root: string, from: string, to: string): boolean {
+  const p = join(root, "PROJECT.md");
+  if (!existsSync(p)) return false;
+  // Strip HTML comments so the seeded template example doesn't count as a report.
+  const text = readFileSync(p, "utf8").replace(/<!--[\s\S]*?-->/g, "");
+  const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`^#{2,3}\\s*GATE:\\s*${esc(from)}\\s*(?:→|->)\\s*${esc(to)}\\b`, "mi");
+  return re.test(text);
 }

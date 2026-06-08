@@ -7,6 +7,23 @@ All notable changes to this project are documented here. Format based on
 ## [Unreleased]
 
 ### Added
+- Methodology-grounded artifact templates (BIZ/PS/PLAN/PRD/US/TASK/ADR) rebuilt
+  from Lean Canvas/JTDB, Cagan + North Star + Shape Up, lean-PRD, Job Story +
+  INVEST + Gherkin, and Google-doc/C4/DDD/MADR research.
+- User stories use a **Job Story** spine ("When … I want … so I can …") with the
+  role in frontmatter; Connextra kept for role-essential stories.
+- **Decision classification** (Mechanical / Taste / User-Challenge); `log_decision`
+  records the class; an unresolved User-Challenge hard-blocks the gate in any mode.
+- **Gate report marker**: `check_gate` requires a `### GATE: from→to` block in
+  PROJECT.md before a stage is considered passed.
+- Agent-conduct rules (one question at a time, ≥2 alternatives, no sycophancy)
+  in the SPEC and the AGENTS.md entrypoint.
+
+### Changed
+- Lean frontmatter standard (id/status/parent/updated + domain/role/children/supersedes
+  where they apply); explicit epistemic tags and living-doc/decision-log conventions.
+
+### Added (earlier)
 - Initial framework: canonical `spec/SPEC.md` (lifecycle, traceability, gates,
   per-stage agent guidelines).
 - `scripts/scaffold.sh` to install the framework into any project.

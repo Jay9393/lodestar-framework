@@ -1,4 +1,10 @@
-import { hasArtifact, hasArtifactRecursive, type Stage } from "./project.js";
+import {
+  hasArtifact,
+  hasArtifactRecursive,
+  countOpenUserChallenges,
+  hasGateReport,
+  type Stage,
+} from "./project.js";
 
 export interface GateItem {
   id: string;
@@ -12,6 +18,8 @@ export interface GateResult {
   to: Stage | "(done)";
   items: { id: string; description: string; status: "pass" | "fail" | "manual" }[];
   autoPassed: boolean;
+  /** An unresolved User-Challenge decision exists — hard-blocks regardless of mode. */
+  userChallengeOpen: boolean;
 }
 
 const PRD_RE = /^PRD-\d+.*\.md$/;
@@ -72,10 +80,25 @@ export function checkGate(root: string, from: Stage): GateResult {
       status: it.auto(root) ? ("pass" as const) : ("fail" as const),
     };
   });
+
+  // Cross-cutting checks appended to every gate.
+  items.push({
+    id: "gate-report",
+    description: `A '### GATE: ${from}→${gate.to}' report block is filed in PROJECT.md.`,
+    status: hasGateReport(root, from, gate.to) ? "pass" : "fail",
+  });
+  const userChallengeOpen = countOpenUserChallenges(root) > 0;
+  items.push({
+    id: "no-open-user-challenges",
+    description: "No unresolved User-Challenge decisions remain (never auto-bypassable).",
+    status: userChallengeOpen ? "fail" : "pass",
+  });
+
   return {
     from,
     to: gate.to,
     items,
     autoPassed: items.every((i) => i.status !== "fail"),
+    userChallengeOpen,
   };
 }

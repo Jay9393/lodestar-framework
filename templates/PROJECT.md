@@ -22,6 +22,19 @@ _TBD — define after 00-business-strategy and 01-product-strategy._
 
 _No artifacts yet._
 
+## Gate Reports
+
+<!-- Append one block when you complete a stage, BEFORE transitioning.
+     check_gate verifies a matching block exists. Format:
+### GATE: discovery→design
+- status: passed | skipped
+- date: YYYY-MM-DD
+- unresolved-user-challenges: none
+- checklist: biz, strategy, plan, prd, us, domain-map — all met
+-->
+
+_No gates passed yet._
+
 ## Active gate-skips
 
 <!-- Each time a stage is entered without its upstream output, log it here and

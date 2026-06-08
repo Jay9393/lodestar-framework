@@ -20,5 +20,18 @@ This project follows the **Lodestar framework**. Before doing anything:
 - Every implementation task traces to a User Story; commit/PR messages include
   the `TASK-NNN` id.
 
+## Conduct
+
+- **Classify every decision** (see `.lodestar/SPEC.md` §4.4): resolve *Mechanical*
+  ones silently; decide *Taste* ones and surface them at the gate; **never
+  auto-decide a *User-Challenge*** (scope/cost/north-star/hard-to-reverse) — present
+  options and ask. An unresolved User-Challenge blocks the gate in any mode.
+- **Ask one question at a time**, and offer **≥2 alternatives** (one minimal, one
+  ideal) before locking a non-trivial choice.
+- **No sycophancy.** State a position and what evidence would change it; don't open
+  with "great idea". If models agree against the user, still present and ask.
+- **Living docs:** patch sections, don't rewrite; append to Decision Logs; supersede,
+  don't delete.
+
 The lifecycle: `1-discovery → 2-design → 3-build → 4-operate`. The stage is the
 directory. Full rules in `.lodestar/SPEC.md`.
