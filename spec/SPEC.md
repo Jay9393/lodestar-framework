@@ -326,5 +326,11 @@ The MCP server exposes the framework as callable tools so enforcement is both
 5. Classify each decision (§4.4): resolve Mechanical silently, decide Taste and
    surface it, escalate User-Challenge to the human. Ask one question at a time.
 6. Before moving to the next stage, run the gate (or `check_gate`), file the gate
-   report block in `PROJECT.md`, and log any skip or notable decision.
+   report block in `PROJECT.md`, and log any skip or notable decision. **Stop at the
+   gate and ask the user to confirm advancing** — a transition is never silent.
 7. Update `PROJECT.md` (stage, traceability index) when a stage completes.
+
+This protocol is operationalized by three Claude Code skills (optional, model-agnostic
+underneath): **`lodestar-new`** (scaffold + offer to start), **`lodestar-run`** (drive
+the current stage), and **`lodestar-gate`** (verify + confirm + advance). An agent
+without skills simply follows steps 1–7 directly.

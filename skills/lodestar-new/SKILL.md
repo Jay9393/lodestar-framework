@@ -55,17 +55,23 @@ Run:
 "$FRAMEWORK/scripts/scaffold.sh" "<TARGET>" --name "<display name>" --mode "<mode>"
 ```
 
-## Step 6 — Report and point at the next step
+## Step 6 — Report, then offer to start discovery
 
-Tell the user the project was created and what to do next:
+Tell the user the project was created:
 
-- Open the new project directory and work top-down from
-  `docs/1-discovery/00-business-strategy/`, using the templates in
-  `.lodestar/templates/`.
-- The framework spec is vendored at `.lodestar/SPEC.md`; build conventions are at
+- It starts in `stage: discovery`; the framework spec is vendored at
+  `.lodestar/SPEC.md`, templates at `.lodestar/templates/`, conventions at
   `.lodestar/conventions/`.
 - Optionally connect the `lodestar-mcp` server (set `LODESTAR_PROJECT_ROOT` to the
   new project) for stage/gate/north-star enforcement.
+
+Then **ask the user: "Start discovery now?"**
+
+- **Yes** → switch to working *inside the new project* (treat it as the working
+  directory) and invoke **`lodestar-run`**, which begins the first sub-step
+  (`00-business-strategy`). The workflow then drives itself stage by stage, pausing
+  at each lifecycle gate (`lodestar-gate`) for confirmation.
+- **No** → stop; the user can run `lodestar-run` whenever they're ready.
 
 > This skill is a thin wrapper. The underlying engine is `scripts/scaffold.sh`,
 > which any agent or a human can run directly — the workflow is model-agnostic.

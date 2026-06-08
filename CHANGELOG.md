@@ -7,6 +7,11 @@ All notable changes to this project are documented here. Format based on
 ## [Unreleased]
 
 ### Added
+- Stage orchestration skills: `lodestar-run` (drives the current stage's work, one
+  question at a time, then gates) and `lodestar-gate` (verifies the gate, asks the
+  user to confirm/skip, files the gate report, advances `PROJECT.md`). `lodestar-new`
+  now offers to start discovery immediately, so scaffold → discovery → … flows
+  stage by stage, pausing at each lifecycle gate for confirmation.
 - Task-tracking convention (`spec/conventions/task-tracking.md`) + `tracker` field
   in `PROJECT.md`: the repo filesystem is the single source of truth for work items;
   an external tracker (`tracker: linear`) is an optional one-way mirror of the TASK
