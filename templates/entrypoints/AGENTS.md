@@ -19,6 +19,10 @@ This project follows the **Lodestar framework**. Before doing anything:
   and an entry in `PROJECT.md`.
 - Every implementation task traces to a User Story; commit/PR messages include
   the `TASK-NNN` id.
+- When writing code, follow `.lodestar/conventions/server.md` (server) and
+  `.lodestar/conventions/frontend.md` (frontend): logic in use-cases, IO behind
+  ports/adapters, repository pattern for DB/cache, schema only via migrations,
+  and tests for every use-case/API with external calls mocked.
 
 ## Conduct
 

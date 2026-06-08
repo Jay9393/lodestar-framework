@@ -88,6 +88,8 @@ cd mcp-server && npm install && npm run build
 ```text
 lodestar-framework/
 ├── spec/SPEC.md          # canonical framework definition (read this)
+│   └── conventions/      # server.md + frontend.md — design/impl rules for build
+├── # (conventions are vendored into each project at .lodestar/conventions/)
 ├── templates/            # entrypoints + docs-tree + PROJECT.md + artifacts/, copied by scaffold
 │   └── artifacts/        # BIZ/PS/PLAN/PRD/US/TASK/ADR doc templates
 ├── scripts/scaffold.sh   # creates the framework in a target project

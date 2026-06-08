@@ -256,18 +256,25 @@ Each stage defines **[output location · agent rules · definition of done (DoD)
   Business domain ≠ technical domain — record any divergence with a reason here.
 - **Output:** `tech/<domain>/<context>/` (architecture, data model, API, NFRs),
   `tech/shared/<context>/`, `design/` (screens, flows, UX), `adr/ADR-NNN-*.md`.
-- **Rules:** every spec sets `parent` to the US/PRD it serves. Flag drift/gaps:
-  (a) a US with no spec, (b) a non-`shared/` context used by 2+ domains
-  (ownership ambiguous), (c) a context serving no business domain (over-design).
-  Framework/library choices get an ADR.
+- **Rules:** every spec sets `parent` to the US/PRD it serves. Design toward the
+  build conventions (`.lodestar/conventions/{server,frontend}.md`) — e.g. name the
+  use-cases, the ports (repositories/external clients), and the boundary contracts.
+  Flag drift/gaps: (a) a US with no spec, (b) a non-`shared/` context used by 2+
+  domains (ownership ambiguous), (c) a context serving no business domain
+  (over-design). Framework/library choices get an ADR.
 - **DoD → Build:** context map exists; every active US is covered by tech + design specs.
 
 ### 5.3 Build → `3-build/` {#build}
 - **Output:** code in `src/` + `docs/3-build/tasks/TASK-NNN-*.md`, `parent: [US-NNN]`
+- **Conventions (mandatory):** server code follows `.lodestar/conventions/server.md`
+  and frontend code follows `.lodestar/conventions/frontend.md` — dependencies point
+  inward, IO (DB/cache/external APIs) sits behind ports/adapters, business logic is
+  use-cases, and use-cases + APIs have tests with external calls mocked. Deviations
+  need a logged decision or an ADR.
 - **Rules:** every task traces to a US via `parent`. Commit/PR messages include
   `TASK-NNN`. If implementation must diverge from spec, **stop and update the
   spec first** — code never runs ahead of spec. Tests verify the US's ACs.
-- **DoD → Operate:** ACs met, tests pass, deployable.
+- **DoD → Operate:** ACs met, tests pass (per the conventions' checklist), deployable.
 
 ### 5.4 Operate → `4-operate/` {#operate}
 - **Output:** `runbooks/`, `metrics/` (event schema + dashboards), `incidents/`.

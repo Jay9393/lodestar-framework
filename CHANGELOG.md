@@ -7,6 +7,10 @@ All notable changes to this project are documented here. Format based on
 ## [Unreleased]
 
 ### Added
+- Build conventions: `spec/conventions/server.md` and `frontend.md` (clean/hexagonal —
+  use-cases, ports/adapters, repository pattern, migration rules, testing with mocked
+  IO, plus error handling / validation / config / observability). Vendored to
+  `.lodestar/conventions/`; referenced from SPEC build/design stages and AGENTS.md.
 - Methodology-grounded artifact templates (BIZ/PS/PLAN/PRD/US/TASK/ADR) rebuilt
   from Lean Canvas/JTDB, Cagan + North Star + Shape Up, lean-PRD, Job Story +
   INVEST + Gherkin, and Google-doc/C4/DDD/MADR research.

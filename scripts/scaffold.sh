@@ -69,6 +69,9 @@ cp "$SPEC" "$TARGET/.lodestar/SPEC.md"
 echo "→ .lodestar/templates/ (artifact templates: BIZ/PS/PLAN/PRD/US/TASK/ADR)"
 cp -R "$TEMPLATES/artifacts/" "$TARGET/.lodestar/templates/"
 
+echo "→ .lodestar/conventions/ (server + frontend design/impl rules)"
+cp -R "$REPO_DIR/spec/conventions/" "$TARGET/.lodestar/conventions/"
+
 # --- substitute placeholders ---------------------------------------------
 echo "→ filling placeholders (name=$NAME, mode=$MODE, date=$DATE)"
 # Escape characters that are special in a sed replacement (\, &, and /).
