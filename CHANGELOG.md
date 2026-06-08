@@ -7,6 +7,10 @@ All notable changes to this project are documented here. Format based on
 ## [Unreleased]
 
 ### Added
+- Task-tracking convention (`spec/conventions/task-tracking.md`) + `tracker` field
+  in `PROJECT.md`: the repo filesystem is the single source of truth for work items;
+  an external tracker (`tracker: linear`) is an optional one-way mirror of the TASK
+  layer only (file always wins). Planning artifacts never move to a SaaS.
 - `lodestar-new` agent skill (`skills/lodestar-new/SKILL.md`): create a new project
   via an agent, asking where to put it (current dir / under the framework / custom
   path), the name, and the gate mode, then running `scaffold.sh`. Projects are

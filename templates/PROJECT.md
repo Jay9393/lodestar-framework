@@ -2,6 +2,7 @@
 project: {{PROJECT_NAME}}
 stage: discovery            # discovery | design | build | operate
 mode: {{MODE}}              # strict | lite
+tracker: files              # files (default) | linear  — see .lodestar/conventions/task-tracking.md
 updated: {{DATE}}
 ---
 

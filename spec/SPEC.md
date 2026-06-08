@@ -271,6 +271,10 @@ Each stage defines **[output location · agent rules · definition of done (DoD)
   inward, IO (DB/cache/external APIs) sits behind ports/adapters, business logic is
   use-cases, and use-cases + APIs have tests with external calls mocked. Deviations
   need a logged decision or an ADR.
+- **Task tracking:** follow `.lodestar/conventions/task-tracking.md`. The repo is
+  the single source of truth — TASK files (`status: todo→in-progress→done`) are
+  canonical. An external tracker (`tracker: linear` in `PROJECT.md`) is an optional
+  one-way mirror of the TASK layer only; the file always wins.
 - **Rules:** every task traces to a US via `parent`. Commit/PR messages include
   `TASK-NNN`. If implementation must diverge from spec, **stop and update the
   spec first** — code never runs ahead of spec. Tests verify the US's ACs.
